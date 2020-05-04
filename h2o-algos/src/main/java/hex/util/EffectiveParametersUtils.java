@@ -12,10 +12,8 @@ public class EffectiveParametersUtils {
         Model.Parameters params
     ) {
         if (params._fold_assignment == Model.Parameters.FoldAssignmentScheme.AUTO) {
-            if (params._nfolds > 0 && params._fold_column == null){
+            if (params._nfolds > 0 && params._fold_column == null) {
                 params._fold_assignment = Model.Parameters.FoldAssignmentScheme.Random;
-            } else {
-                params._fold_assignment = null;
             }
         }
     }
@@ -64,14 +62,10 @@ public class EffectiveParametersUtils {
 
     public static void initCategoricalEncoding(
             Model.Parameters params,
-            int nclasses,
             Model.Parameters.CategoricalEncodingScheme scheme
     ) {
         if (params._categorical_encoding == Model.Parameters.CategoricalEncodingScheme.AUTO) {
-            if (nclasses == 1)
-                params._categorical_encoding = null;
-            else
-                params._categorical_encoding = scheme;
+            params._categorical_encoding = scheme;
         }
     }
 }

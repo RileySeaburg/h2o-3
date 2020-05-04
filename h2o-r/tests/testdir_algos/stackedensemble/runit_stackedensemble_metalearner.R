@@ -46,8 +46,8 @@ stackedensemble.metalearner.test <- function() {
                                 training_frame = train,
                                 base_models = list(my_gbm, my_rf))
   # Check that metalearner_algorithm default is GLM w/ non-negative
-  expect_equal(stack0@parameters$metalearner_algorithm, NULL)
-  expect_equal(stack0@allparameters$metalearner_algorithm, "AUTO")
+  expect_equal(stack0@parameters$metalearner_algorithm, "glm")
+  expect_equal(stack0@allparameters$metalearner_algorithm, "glm")
   # Check that the metalearner is GLM w/ non-negative
   meta0 <- h2o.getModel(stack0@model$metalearner$name)
   expect_equal(meta0@algorithm, "glm")

@@ -252,7 +252,7 @@ public class XGBoostModel extends Model<XGBoostModel, XGBoostModel.XGBoostParame
 
   public void initActualParamValuesAfterOutputSetup(boolean isClassifier, int nclasses) {
     EffectiveParametersUtils.initStoppingMetric(_parms, isClassifier, false);
-    EffectiveParametersUtils.initCategoricalEncoding(_parms, nclasses, Parameters.CategoricalEncodingScheme.OneHotInternal);
+    EffectiveParametersUtils.initCategoricalEncoding(_parms, Parameters.CategoricalEncodingScheme.OneHotInternal);
     EffectiveParametersUtils.initDistribution(_parms, nclasses);
     _parms._dmatrix_type = _output._sparse ? XGBoostModel.XGBoostParameters.DMatrixType.sparse : XGBoostModel.XGBoostParameters.DMatrixType.dense;
   }
