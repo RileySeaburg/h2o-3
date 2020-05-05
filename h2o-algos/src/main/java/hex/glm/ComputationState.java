@@ -28,7 +28,7 @@ public final class ComputationState {
   final int _nclasses;
   private final GLMParameters _parms;
   private BetaConstraint _bc;
-  final double _alpha;
+  double _alpha;  // cannot be final, need to change when alpha is an array
   double[] _ymu;
   double [] _u;
   double [] _z;
@@ -40,6 +40,8 @@ public final class ComputationState {
   private GLMGradientInfo _ginfo; // gradient info excluding l1 penalty
   private double _likelihood;
   private double _gradientErr;
+  private boolean _lambdaNull; // true is lambda was not provided by user
+  private double _gMax; // store max value of original gradient without dividing by math.max(1e-2, _parms._alpha[0])
   private DataInfo _activeData;
   private BetaConstraint _activeBC = null;
   private double[] _beta; // vector of coefficients corresponding to active data
@@ -146,6 +148,8 @@ public final class ComputationState {
   public double get_tau() {
     return _tau;
   }
+  
+  public boolean getLambdaNull() { return _lambdaNull; }
 
   public void set_tau(double tau) {
     _tau=tau;
@@ -163,9 +167,15 @@ public final class ComputationState {
 
   public GLMGradientSolver gslvr(){return _gslvr;}
   public double lambda(){return _lambda;}
+  public double alpha() {return _alpha;}
   public void setLambdaMax(double lmax) {
     _lambdaMax = lmax;
   }
+  public void setgMax(double gmax) {
+    _gMax = gmax;
+  }
+  public void setAlpha(double alpha) {_alpha=alpha;}
+  public void setLambdaNull(boolean val) { _lambdaNull = val;}
   public void setLambda(double lambda) {
     adjustToNewLambda(0, _lambda);
     // strong rules are to be applied on the gradient with no l2 penalty
@@ -207,7 +217,8 @@ public final class ComputationState {
   public void dropActiveData(){_activeData = null;}
 
   public String toString() {
-    return "iter=" + _iter + " lmb=" + GLM.lambdaFormatter.format(_lambda) + " obj=" + MathUtils.roundToNDigits(objective(),4) + " imp=" + GLM.lambdaFormatter.format(_relImprovement) + " bdf=" + GLM.lambdaFormatter.format(_betaDiff);
+    return "iter=" + _iter + " lmb=" + GLM.lambdaFormatter.format(_lambda) + " alpha=" + 
+            GLM.lambdaFormatter.format(_alpha)+ " obj=" + MathUtils.roundToNDigits(objective(),4) + " imp=" + GLM.lambdaFormatter.format(_relImprovement) + " bdf=" + GLM.lambdaFormatter.format(_betaDiff);
   }
 
   private void adjustToNewLambda(double lambdaNew, double lambdaOld) {
