@@ -3,28 +3,17 @@ package hex.tree.xgboost.exec;
 import hex.DataInfo;
 import hex.tree.xgboost.BoosterParms;
 import hex.tree.xgboost.XGBoostModel;
-import hex.tree.xgboost.XGBoostUtils;
 import hex.tree.xgboost.matrix.FrameMatrixLoader;
 import hex.tree.xgboost.matrix.MatrixLoader;
 import hex.tree.xgboost.matrix.RemoteMatrixLoader;
-import hex.tree.xgboost.predict.XGBoostVariableImportance;
 import hex.tree.xgboost.rabit.RabitTrackerH2O;
 import hex.tree.xgboost.task.XGBoostCleanupTask;
 import hex.tree.xgboost.task.XGBoostSetupTask;
 import hex.tree.xgboost.task.XGBoostUpdateTask;
-import hex.tree.xgboost.util.BoosterHelper;
-import hex.tree.xgboost.util.FeatureScore;
-import ml.dmlc.xgboost4j.java.*;
-import org.apache.log4j.Logger;
 import water.H2O;
 import water.Key;
 import water.fvec.Frame;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,8 +24,6 @@ public class LocalXGBoostExecutor implements XGBoostExecutor {
     private final XGBoostSetupTask setupTask;
     
     private XGBoostUpdateTask updateTask;
-    
-    private byte[] latestBooster;
     
     /**
      * Used when executing from a remote model
@@ -49,7 +36,7 @@ public class LocalXGBoostExecutor implements XGBoostExecutor {
         for (int i = 0; i < init.num_nodes; i++) nodes[i] = init.nodes[i] != null;
         MatrixLoader loader = new RemoteMatrixLoader(init.matrix_dir_path, init.nodes);
         setupTask = new XGBoostSetupTask(
-            modelKey, null, boosterParams, init.checkpoint_bytes, getRabitEnv(), nodes, loader
+            modelKey, init.save_matrix_path, boosterParams, init.checkpoint_bytes, getRabitEnv(), nodes, loader
         );
     }
 
@@ -114,8 +101,12 @@ public class LocalXGBoostExecutor implements XGBoostExecutor {
 
     @Override
     public byte[] updateBooster() {
-        latestBooster = updateTask.getBoosterBytes();
-        return latestBooster;
+        if (updateTask != null) {
+            byte[] booster = updateTask.getBoosterBytes();
+            updateTask = null;
+            return booster;
+        }
+        return null;
     }
 
     @Override

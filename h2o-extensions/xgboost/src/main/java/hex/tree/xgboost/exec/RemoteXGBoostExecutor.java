@@ -4,18 +4,13 @@ import hex.DataInfo;
 import hex.schemas.XGBoostExecRespV3;
 import hex.tree.xgboost.BoosterParms;
 import hex.tree.xgboost.XGBoostModel;
-import hex.tree.xgboost.XGBoostUtils;
 import hex.tree.xgboost.matrix.FrameMatrixLoader;
 import hex.tree.xgboost.matrix.MatrixLoader;
-import hex.tree.xgboost.task.XGBoostSetupTask;
-import hex.tree.xgboost.util.FeatureScore;
 import hex.tree.xgboost.task.XGBoostSaveMatrixTask;
-import water.AutoBuffer;
+import hex.tree.xgboost.task.XGBoostSetupTask;
 import water.H2O;
 import water.Key;
 import water.fvec.Frame;
-
-import java.util.Map;
 
 public class RemoteXGBoostExecutor implements XGBoostExecutor {
 
@@ -36,6 +31,7 @@ public class RemoteXGBoostExecutor implements XGBoostExecutor {
         model._output._native_parameters = BoosterParms.fromMap(req.parms).toTwoDimTable();
         MatrixLoader loader = new FrameMatrixLoader(model, train);
         req.matrix_dir_path = H2O.ICE_ROOT.toString() + "/" + modelKey.toString();
+        req.save_matrix_path = model._parms._save_matrix_directory;
         req.nodes = collectNodes(trainFrameNodes);
         new XGBoostSaveMatrixTask(modelKey, req.matrix_dir_path, trainFrameNodes._nodes, loader).run();
         XGBoostExecRespV3 resp = http.postJson(modelKey, "init", req);

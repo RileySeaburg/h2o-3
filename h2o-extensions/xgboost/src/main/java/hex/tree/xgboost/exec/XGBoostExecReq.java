@@ -9,6 +9,7 @@ public class XGBoostExecReq implements Serializable {
         public int num_nodes;
         public Map<String, Object> parms;
         public String matrix_dir_path;
+        public String save_matrix_path;
         public String[] nodes;
         public byte[] checkpoint_bytes;
     }

@@ -369,7 +369,7 @@ public class XGBoost extends ModelBuilder<XGBoostModel,XGBoostModel.XGBoostParam
       XGBoostExecutor exec = new RemoteXGBoostExecutor(H2O.CLOUD.leader().getIpPortString(), model, _train);
       XGBoostVariableImportance variableImportance = model.setupVarImp();
       try {
-        model.model_info().setBoosterBytes(exec.setup());
+        model.model_info().updateBoosterBytes(exec.setup());
         scoreAndBuildTrees(model, exec, variableImportance);
       } finally {
         variableImportance.cleanup();
@@ -443,7 +443,7 @@ public class XGBoost extends ModelBuilder<XGBoostModel,XGBoostModel.XGBoostParam
           constraintCheckEnabled()
       ) {
         _job.update(0, "Checking monotonicity constraints on the final model");
-        model.model_info()._boosterBytes = exec.updateBooster();
+        model.model_info().updateBoosterBytes(exec.updateBooster());
         checkConstraints(model.model_info(), monotoneConstraints);
       }
       
@@ -551,7 +551,7 @@ public class XGBoost extends ModelBuilder<XGBoostModel,XGBoostModel.XGBoostParam
               (timeToScore && _parms._score_tree_interval == 0) || // use time-based duty-cycle heuristic only if the user didn't specify _score_tree_interval
               manualInterval) {
         _timeLastScoreStart = now;
-        model.model_info()._boosterBytes = exec.updateBooster();
+        model.model_info().updateBoosterBytes(exec.updateBooster());
         model.doScoring(_train, _parms.train(), _valid, _parms.valid());
         _timeLastScoreEnd = System.currentTimeMillis();
         XGBoostOutput out = model._output;

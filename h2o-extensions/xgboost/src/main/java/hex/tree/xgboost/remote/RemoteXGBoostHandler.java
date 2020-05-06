@@ -29,9 +29,12 @@ public class RemoteXGBoostHandler extends Handler {
     }
     
     private StreamingSchema makeStreamingResponse(byte[] data) {
+        final byte[] dataToSend;
+        if (data == null) dataToSend = new byte[0];
+        else dataToSend = data;
         return new StreamingSchema(os -> {
             try {
-                IOUtils.copyStream(new ByteArrayInputStream(data), os);
+                IOUtils.copyStream(new ByteArrayInputStream(dataToSend), os);
             } catch (IOException e) {
                 throw new RuntimeException("Failed writing data to response.", e);
             }

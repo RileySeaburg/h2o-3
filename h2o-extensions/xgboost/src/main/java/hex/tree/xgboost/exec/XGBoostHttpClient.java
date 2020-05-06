@@ -37,7 +37,9 @@ public class XGBoostHttpClient {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         IOUtils.copyStream(e.getContent(), bos);
         bos.close();
-        return bos.toByteArray();
+        byte[] b = bos.toByteArray();
+        if (b.length == 0) return null;
+        else return b;
     };
 
     private static final ResponseTransformer<XGBoostExecRespV3> JsonResponseTransformer = (e) -> {
