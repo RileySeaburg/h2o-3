@@ -7,6 +7,7 @@ import hex.tree.xgboost.exec.LocalXGBoostExecutor;
 import hex.tree.xgboost.exec.XGBoostExecReq;
 import hex.tree.xgboost.task.XGBoostSaveMatrixTask;
 import org.apache.log4j.Logger;
+import water.H2O;
 import water.Key;
 import water.api.Handler;
 import water.api.StreamingSchema;
@@ -87,18 +88,29 @@ public class RemoteXGBoostHandler extends Handler {
     public StreamingSchema getMatrix(int ignored, XGBoostExecReqV3 req) {
         XGBoostExecReq.GetMatrix matrix = req.readReq();
         File matrixFile = XGBoostSaveMatrixTask.getMatrixFile(new File(matrix.matrix_dir_path));
+        return streamFile(matrixFile);
+
+    }
+
+    @SuppressWarnings("unused")
+    public StreamingSchema getCheckpoint(int ignored, XGBoostExecReqV3 req) {
+        XGBoostExecReq.GetCheckPoint checkPoint = req.readReq();
+        File checkpointFile = new File(checkPoint.matrix_dir_path, "checkpoint.bin");
+        return streamFile(checkpointFile);
+    }
+    
+    private StreamingSchema streamFile(File file) {
         return new StreamingSchema(os -> {
-            LOG.debug("Serving up matrix data file " + matrixFile);
-            try (FileInputStream fos = new FileInputStream(matrixFile)) {
+            LOG.debug("Serving up data file " + file);
+            try (FileInputStream fos = new FileInputStream(file)) {
                 IOUtils.copyStream(fos, os);
             } catch (IOException e) {
                 throw new RuntimeException("Failed writing data to response.", e);
             } finally {
-                LOG.debug("Deleting matrix file " + matrixFile);
-                matrixFile.delete();
+                LOG.debug("Deleting data file " + file);
+                file.delete();
             }
         });
-
     }
 
 }

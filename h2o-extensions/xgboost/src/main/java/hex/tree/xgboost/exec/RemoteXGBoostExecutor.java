@@ -12,6 +12,11 @@ import water.H2O;
 import water.Key;
 import water.fvec.Frame;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 public class RemoteXGBoostExecutor implements XGBoostExecutor {
 
     public final XGBoostHttpClient http;
@@ -23,9 +28,6 @@ public class RemoteXGBoostExecutor implements XGBoostExecutor {
         XGBoostExecReq.Init req = new XGBoostExecReq.Init();
         XGBoostSetupTask.FrameNodes trainFrameNodes = XGBoostSetupTask.findFrameNodes(train);
         req.num_nodes = trainFrameNodes.getNumNodes();
-        if (model._parms.hasCheckpoint()) {
-            req.checkpoint_bytes = model.model_info()._boosterBytes;
-        }
         DataInfo dataInfo = model.model_info().dataInfo();
         req.parms = XGBoostModel.createParamsMap(model._parms, model._output.nclasses(), dataInfo.coefNames());
         model._output._native_parameters = BoosterParms.fromMap(req.parms).toTwoDimTable();
@@ -34,10 +36,23 @@ public class RemoteXGBoostExecutor implements XGBoostExecutor {
         req.save_matrix_path = model._parms._save_matrix_directory;
         req.nodes = collectNodes(trainFrameNodes);
         new XGBoostSaveMatrixTask(modelKey, req.matrix_dir_path, trainFrameNodes._nodes, loader).run();
+        if (model._parms.hasCheckpoint()) {
+            req.has_checkpoint = true;
+            saveCheckpointBoosterToFile(model, req.matrix_dir_path);
+        }
         XGBoostExecRespV3 resp = http.postJson(modelKey, "init", req);
         assert modelKey.equals(resp.key.key());
     }
-    
+
+    private void saveCheckpointBoosterToFile(XGBoostModel model, String matrix_dir_path) {
+        File checkpointFile = new File(matrix_dir_path, "checkpoint.bin");
+        try (FileOutputStream fos = new FileOutputStream(checkpointFile)) {
+            fos.write(model.model_info()._boosterBytes);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write checkpoint into file.", e);
+        }
+    }
+
     private String[] collectNodes(XGBoostSetupTask.FrameNodes nodes) {
         String[] res = new String[H2O.CLOUD.size()];
         for (int i = 0; i < nodes._nodes.length; i++) {

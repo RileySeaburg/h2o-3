@@ -35,8 +35,15 @@ public class LocalXGBoostExecutor implements XGBoostExecutor {
         boolean[] nodes = new boolean[H2O.CLOUD.size()];
         for (int i = 0; i < init.num_nodes; i++) nodes[i] = init.nodes[i] != null;
         MatrixLoader loader = new RemoteMatrixLoader(init.matrix_dir_path, init.nodes);
+        byte[] checkpoint = null;
+        if (init.has_checkpoint) {
+            XGBoostHttpClient http = new XGBoostHttpClient(init.nodes[0]);
+            XGBoostExecReq.GetCheckPoint req = new XGBoostExecReq.GetCheckPoint();
+            req.matrix_dir_path = init.matrix_dir_path;
+            checkpoint = http.postBytes(null, "getCheckpoint", req);
+        }
         setupTask = new XGBoostSetupTask(
-            modelKey, init.save_matrix_path, boosterParams, init.checkpoint_bytes, getRabitEnv(), nodes, loader
+            modelKey, init.save_matrix_path, boosterParams, checkpoint, getRabitEnv(), nodes, loader
         );
     }
 

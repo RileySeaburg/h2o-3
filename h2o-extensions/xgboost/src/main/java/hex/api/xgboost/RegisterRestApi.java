@@ -51,6 +51,11 @@ public class RegisterRestApi extends AlgoAbstractRegister {
         RemoteXGBoostHandler.class, "getMatrix",
         "Remote XGBoost execution - getMatrix"
     );
+    context.registerEndpoint(
+        "remote_xgb_checkpoint", "POST /3/XGBoostExecutor.getCheckpoint",
+        RemoteXGBoostHandler.class, "getCheckpoint",
+        "Remote XGBoost execution - getCheckpoint"
+    );
   }
 
   @Override

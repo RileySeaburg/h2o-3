@@ -11,7 +11,7 @@ public class XGBoostExecReq implements Serializable {
         public String matrix_dir_path;
         public String save_matrix_path;
         public String[] nodes;
-        public byte[] checkpoint_bytes;
+        public boolean has_checkpoint;
     }
 
     public static class Update extends XGBoostExecReq {
@@ -19,6 +19,10 @@ public class XGBoostExecReq implements Serializable {
     }
 
     public static class GetMatrix extends XGBoostExecReq {
+        public String matrix_dir_path;
+    }
+
+    public static class GetCheckPoint extends XGBoostExecReq {
         public String matrix_dir_path;
     }
 
