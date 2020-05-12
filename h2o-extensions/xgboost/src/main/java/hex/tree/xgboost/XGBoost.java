@@ -10,6 +10,7 @@ import hex.genmodel.utils.DistributionFamily;
 import hex.glm.GLMTask;
 import hex.tree.PlattScalingHelper;
 import hex.tree.TreeUtils;
+import hex.tree.xgboost.exec.LocalXGBoostExecutor;
 import hex.tree.xgboost.exec.RemoteXGBoostExecutor;
 import hex.tree.xgboost.exec.XGBoostExecutor;
 import hex.tree.xgboost.predict.XGBoostVariableImportance;
@@ -364,9 +365,12 @@ public class XGBoost extends ModelBuilder<XGBoostModel,XGBoostModel.XGBoostParam
       }
 
       XGBoostUtils.createFeatureMap(model, _train);
-//      XGBoostExecutor exec = new LocalXGBoostExecutor(model, _train);
-//      XGBoostExecutor exec = new RemoteXGBoostExecutor("localhost:54330", model, _train);
-      XGBoostExecutor exec = new RemoteXGBoostExecutor(H2O.CLOUD.leader().getIpPortString(), model, _train);
+      XGBoostExecutor exec;
+      if (H2O.ARGS.externalXGBoostClusterAddress == null) {
+        exec = new LocalXGBoostExecutor(model, _train);
+      } else {
+        exec = new RemoteXGBoostExecutor(H2O.ARGS.externalXGBoostClusterAddress, model, _train);
+      }
       XGBoostVariableImportance variableImportance = model.setupVarImp();
       try {
         model.model_info().updateBoosterBytes(exec.setup());
