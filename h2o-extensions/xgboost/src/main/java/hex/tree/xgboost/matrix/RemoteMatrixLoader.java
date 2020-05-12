@@ -15,15 +15,16 @@ public class RemoteMatrixLoader extends MatrixLoader {
     private static final Logger LOG = Logger.getLogger(RemoteMatrixLoader.class);
 
     private final String remoteDirectory;
-    private final String remoteNode;
+    private final String remoteNodes[];
 
     public RemoteMatrixLoader(String remoteDirectory, String[] nodes) {
         this.remoteDirectory = remoteDirectory;
-        this.remoteNode = nodes[H2O.SELF.index()];
+        this.remoteNodes = nodes;
     }
 
     @Override
     public DMatrix makeLocalMatrix() throws IOException, XGBoostError {
+        String remoteNode = remoteNodes[H2O.SELF.index()];
         assert remoteNode != null : "Should not be loading DMatrix on this node.";
         File tempFile = File.createTempFile("dmatrix", ".bin");
         XGBoostExecReq.GetMatrix req = new XGBoostExecReq.GetMatrix();

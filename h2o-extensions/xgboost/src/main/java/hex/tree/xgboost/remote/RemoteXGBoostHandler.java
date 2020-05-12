@@ -7,7 +7,6 @@ import hex.tree.xgboost.exec.LocalXGBoostExecutor;
 import hex.tree.xgboost.exec.XGBoostExecReq;
 import hex.tree.xgboost.task.XGBoostSaveMatrixTask;
 import org.apache.log4j.Logger;
-import water.H2O;
 import water.Key;
 import water.api.Handler;
 import water.api.StreamingSchema;
@@ -29,19 +28,6 @@ public class RemoteXGBoostHandler extends Handler {
         return new XGBoostExecRespV3(exec.modelKey);
     }
     
-    private StreamingSchema makeStreamingResponse(byte[] data) {
-        final byte[] dataToSend;
-        if (data == null) dataToSend = new byte[0];
-        else dataToSend = data;
-        return new StreamingSchema(os -> {
-            try {
-                IOUtils.copyStream(new ByteArrayInputStream(dataToSend), os);
-            } catch (IOException e) {
-                throw new RuntimeException("Failed writing data to response.", e);
-            }
-        });
-    }
-
     private LocalXGBoostExecutor getExecutor(XGBoostExecReqV3 req) {
         return REGISTRY.get(req.key.key());
     }
@@ -58,7 +44,7 @@ public class RemoteXGBoostHandler extends Handler {
     public StreamingSchema setup(int ignored, XGBoostExecReqV3 req) {
         LocalXGBoostExecutor exec = getExecutor(req);
         byte[] booster = exec.setup();
-        return makeStreamingResponse(booster);
+        return streamBytes(booster);
     }
 
     @SuppressWarnings("unused")
@@ -73,7 +59,7 @@ public class RemoteXGBoostHandler extends Handler {
     public StreamingSchema getBooster(int ignored, XGBoostExecReqV3 req) {
         LocalXGBoostExecutor exec = getExecutor(req);
         byte[] booster = exec.updateBooster();
-        return makeStreamingResponse(booster);
+        return streamBytes(booster);
     }
 
     @SuppressWarnings("unused")
@@ -89,7 +75,6 @@ public class RemoteXGBoostHandler extends Handler {
         XGBoostExecReq.GetMatrix matrix = req.readReq();
         File matrixFile = XGBoostSaveMatrixTask.getMatrixFile(new File(matrix.matrix_dir_path));
         return streamFile(matrixFile);
-
     }
 
     @SuppressWarnings("unused")
@@ -105,6 +90,7 @@ public class RemoteXGBoostHandler extends Handler {
             try (FileInputStream fos = new FileInputStream(file)) {
                 IOUtils.copyStream(fos, os);
             } catch (IOException e) {
+                LOG.error("Failed writing data to response.", e);
                 throw new RuntimeException("Failed writing data to response.", e);
             } finally {
                 LOG.debug("Deleting data file " + file);
@@ -112,5 +98,20 @@ public class RemoteXGBoostHandler extends Handler {
             }
         });
     }
+
+    private StreamingSchema streamBytes(byte[] data) {
+        final byte[] dataToSend;
+        if (data == null) dataToSend = new byte[0];
+        else dataToSend = data;
+        return new StreamingSchema(os -> {
+            try {
+                IOUtils.copyStream(new ByteArrayInputStream(dataToSend), os);
+            } catch (IOException e) {
+                LOG.error("Failed writing data to response.", e);
+                throw new RuntimeException("Failed writing data to response.", e);
+            }
+        });
+    }
+
 
 }

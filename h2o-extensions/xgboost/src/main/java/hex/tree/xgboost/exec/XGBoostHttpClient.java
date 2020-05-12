@@ -69,11 +69,11 @@ public class XGBoostHttpClient {
     }
 
     private <T> T post(Key key, String method, XGBoostExecReq reqContent, ResponseTransformer<T> transformer) {
+        LOG.info("Request " + method + " " + reqContent);
         XGBoostExecReqV3 req = new XGBoostExecReqV3(key, reqContent);
         HttpPost httpReq = new HttpPost(baseUri + method);
         httpReq.setEntity(new StringEntity(req.toJsonString(), UTF_8));
         httpReq.setHeader(CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
-        LOG.info("Request " + method + " " + reqContent);
         try (CloseableHttpClient client = HttpClientBuilder.create().build();
              CloseableHttpResponse response = client.execute(httpReq)) {
             if (response.getStatusLine().getStatusCode() != OK.getCode()) {
