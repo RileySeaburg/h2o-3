@@ -664,6 +664,11 @@ public final class ComputationState {
     _likelihood = ginfo._likelihood;
     return (_relImprovement = (objOld - objective())/Math.abs(objOld));
   }
+  
+  protected void setBeta(double[] beta) {
+    if(_beta == null)_beta = beta.clone();
+    else System.arraycopy(beta,0,_beta,0,beta.length);
+  }
 
   protected void setHGLMComputationState(double [] beta, double[] ubeta, double[] psi, double[] phi, 
                                          double hlcorrection, double tau, Frame wpsi, String[] randCoeffNames){
