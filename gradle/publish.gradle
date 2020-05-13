@@ -73,7 +73,7 @@ publishing {
                   artifact(signature, new Action<MavenArtifact>() {
                       @Override
                       void execute(MavenArtifact t) {
-                          t.classifier = signature.toSignArtifact.classifier != "" ? signature.toSignArtifact.classifier : null
+                          t.classifier = signature.classifier != "" ? signature.classifier : null
                           t.extension = signature.type == "xml.asc" ? "pom.asc" : signature.type
                       }
                   })
@@ -136,7 +136,7 @@ publishing {
           url "$rootDir/build/repo"
       }
 
-      if (project.ext.isRelease) {
+      if (false) {
           maven {
               name "SonatypeRelease"
               url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
