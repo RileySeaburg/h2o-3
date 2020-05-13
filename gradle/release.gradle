@@ -3,6 +3,7 @@ apply plugin: 'nexus-workflow'
 
 release {
   tagTemplate = "release"
+    failOnCommitNeeded = false
     git {
         requireBranch = "rel-[a-zA-Z]*|master|pavel/gradle-6.3-release-master"
     }
