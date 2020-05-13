@@ -174,7 +174,10 @@ public final class ComputationState {
   public void setgMax(double gmax) {
     _gMax = gmax;
   }
-  public void setAlpha(double alpha) {_alpha=alpha;}
+  public void setAlpha(double alpha) {
+    _alpha=alpha;
+    setLambdaMax(_gMax/Math.max(1e-2,alpha)); // need to set _lmax every time alpha value changes
+  }
   public void setLambdaNull(boolean val) { _lambdaNull = val;}
   public void setLambda(double lambda) {
     adjustToNewLambda(0, _lambda);
