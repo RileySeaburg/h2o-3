@@ -2151,7 +2151,6 @@ public class GLM extends ModelBuilder<GLMModel,GLMParameters,GLMOutput> {
       for (int alphaInd = 0; alphaInd < _parms._alpha.length; alphaInd++) {
         _state.setAlpha(_parms._alpha[alphaInd]);   // loop through the alphas
         _model._output._selected_alpha_idx = alphaInd;
-        
         if (_state.getLambdaNull()) _parms._lambda[0] = _gmax/Math.max(1e-2, _parms._alpha[alphaInd]);
         for (int i = 0; i < _parms._lambda.length; ++i) {  // lambda search
           if (_job.stop_requested() || (timeout() && _model._output._submodels.length > 0))
