@@ -2015,7 +2015,10 @@ public class GLM extends ModelBuilder<GLMModel,GLMParameters,GLMOutput> {
 
     protected Submodel computeSubmodel(int i,double lambda) {
       Submodel sm;
-      _state.setBeta(getNullBeta());  // reset beta to original starting condition
+      if (!_parms._lambda_search) {
+        _state.setBeta(getNullBeta());  // reset beta to original starting condition except when lambda search is enabled
+        _state.setIter(0);
+      }
       if(lambda >= _lmax && _state.l1pen() > 0)
         _model.addSubmodel(sm = new Submodel(lambda, _state.alpha(), getNullBeta(),_state._iter,_nullDevTrain,_nullDevTest));
       else {  // this is also the path for HGLM model

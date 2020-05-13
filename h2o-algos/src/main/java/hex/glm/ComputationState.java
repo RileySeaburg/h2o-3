@@ -672,6 +672,10 @@ public final class ComputationState {
     if(_beta == null)_beta = beta.clone();
     else System.arraycopy(beta,0,_beta,0,beta.length);
   }
+  
+  protected void setIter(int iteration) {
+    _iter = iteration;
+  }
 
   protected void setHGLMComputationState(double [] beta, double[] ubeta, double[] psi, double[] phi, 
                                          double hlcorrection, double tau, Frame wpsi, String[] randCoeffNames){
