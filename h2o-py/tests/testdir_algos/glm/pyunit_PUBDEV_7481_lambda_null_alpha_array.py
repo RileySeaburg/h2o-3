@@ -17,6 +17,7 @@ from h2o.estimators.glm import H2OGeneralizedLinearEstimator as glm
 # 1. coefficients from submodels and individual model should match when they are using the same alpha/lambda value;
 # 2. training metrics from alpha array should equal to the individual model matching the alpha/lambda value;
 def glm_alpha_array_lambda_null():
+    # first test: compare coefficients and deviance
     d = h2o.import_file(path=pyunit_utils.locate("smalldata/logreg/prostate.csv"))
     mL = glm(family='binomial',alpha=[0.1,0.5,0.9],solver='COORDINATE_DESCENT')
     mL.train(training_frame=d,x=[2,3,4,5,6,7,8],y=1)
@@ -57,12 +58,6 @@ def glm_alpha_array_lambda_null():
         else: # for other submodel, should have worse residual_deviance() than best submodel
             assert p.residual_deviance() >= p2.residual_deviance(), "Best submodel does not have lowerest " \
                                                                     "residual_deviance()!"
-        
-    # read in the dataset and construct training set (and validation set)
-    d = h2o.import_file(path=pyunit_utils.locate("smalldata/logreg/prostate.csv"))
-    m = glm(family='binomial', alpha=[0.1, 0.5, 0.9])
-    m.train(training_frame=d, x=[2, 3, 4, 5, 6, 7, 8], y=1)
-    pyunit_utils.compareSubmodelsNindividualModels(m, d, [2, 3, 4, 5, 6, 7, 8], 1)
             
 if __name__ == "__main__":
     pyunit_utils.standalone_test(glm_alpha_array_lambda_null)
