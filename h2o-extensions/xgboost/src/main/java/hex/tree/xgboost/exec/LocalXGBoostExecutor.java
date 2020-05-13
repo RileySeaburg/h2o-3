@@ -76,8 +76,8 @@ public class LocalXGBoostExecutor implements XGBoostExecutor {
         return updateTask.getBoosterBytes();
     }
 
-    // Don't start the tracker for 1 node clouds -> the GPU plugin fails in such a case
     private void startRabitTracker() {
+        // Don't start the tracker for 1 node clouds -> the GPU plugin fails in such a case
         if (H2O.CLOUD.size() > 1) {
             rt.start(0);
         }
@@ -90,8 +90,8 @@ public class LocalXGBoostExecutor implements XGBoostExecutor {
         }
     }
 
-    // XGBoost seems to manipulate its frames in case of a 1 node distributed version in a way the GPU plugin can't handle
-    // Therefore don't use RabitTracker envs for 1 node
+    // XGBoost seems to manipulate its frames in case of a 1 node distributed version in a way 
+    // the GPU plugin can't handle Therefore don't use RabitTracker envs for 1 node
     private Map<String, String> getRabitEnv() {
         if(H2O.CLOUD.size() > 1) {
             return rt.getWorkerEnvs();
