@@ -59,12 +59,6 @@ def glm_alpha_lambda_arrays():
                                                                     "residual_deviance()!"
             
 
-            # read in the dataset and construct training set (and validation set)
-    d = h2o.import_file(path=pyunit_utils.locate("smalldata/logreg/prostate.csv"))
-    m = glm(family='binomial',Lambda=[0.9,0.5,0.1], alpha=[0.1,0.5,0.9])
-    m.train(training_frame=d,x=[2,3,4,5,6,7,8],y=1)
-    pyunit_utils.compareSubmodelsNindividualModels(m, d, [2, 3, 4, 5, 6, 7, 8], 1)
-
 if __name__ == "__main__":
     pyunit_utils.standalone_test(glm_alpha_lambda_arrays)
 else:
