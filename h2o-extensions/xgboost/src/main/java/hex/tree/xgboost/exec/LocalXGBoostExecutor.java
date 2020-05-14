@@ -30,7 +30,7 @@ public class LocalXGBoostExecutor implements XGBoostExecutor {
      */
     public LocalXGBoostExecutor(Key key, XGBoostExecReq.Init init) {
         modelKey = key;
-        rt = new RabitTrackerH2O(init.num_nodes);
+        rt = setupRabitTracker(init.num_nodes);
         BoosterParms boosterParams = BoosterParms.fromMap(init.parms);
         boolean[] nodes = new boolean[H2O.CLOUD.size()];
         for (int i = 0; i < init.num_nodes; i++) nodes[i] = init.nodes[i] != null;
@@ -53,7 +53,7 @@ public class LocalXGBoostExecutor implements XGBoostExecutor {
     public LocalXGBoostExecutor(XGBoostModel model, Frame train) {
         modelKey = model._key;
         XGBoostSetupTask.FrameNodes trainFrameNodes = XGBoostSetupTask.findFrameNodes(train);
-        rt = new RabitTrackerH2O(trainFrameNodes.getNumNodes());
+        rt = setupRabitTracker(trainFrameNodes.getNumNodes());
         byte[] checkpointBytes = null;
         if (model._parms.hasCheckpoint()) {
             checkpointBytes = model.model_info()._boosterBytes;
@@ -70,30 +70,32 @@ public class LocalXGBoostExecutor implements XGBoostExecutor {
     
     @Override
     public byte[] setup() {
-        startRabitTracker();
         setupTask.run();
         updateTask = new XGBoostUpdateTask(setupTask, 0).run();
         return updateTask.getBoosterBytes();
     }
 
-    private void startRabitTracker() {
-        // Don't start the tracker for 1 node clouds -> the GPU plugin fails in such a case
+    private RabitTrackerH2O setupRabitTracker(int numNodes) {
+        // XGBoost seems to manipulate its frames in case of a 1 node distributed version in a way 
+        // the GPU plugin can't handle Therefore don't use RabitTracker envs for 1 node
         if (H2O.CLOUD.size() > 1) {
+            RabitTrackerH2O rt = new RabitTrackerH2O(numNodes);
             rt.start(0);
+            return rt;
+        } else {
+            return null;
         }
     }
 
     private void stopRabitTracker() {
-        if(H2O.CLOUD.size() > 1) {
+        if (rt != null) {
             rt.waitFor(0);
             rt.stop();
         }
     }
 
-    // XGBoost seems to manipulate its frames in case of a 1 node distributed version in a way 
-    // the GPU plugin can't handle Therefore don't use RabitTracker envs for 1 node
     private Map<String, String> getRabitEnv() {
-        if(H2O.CLOUD.size() > 1) {
+        if (rt != null) {
             return rt.getWorkerEnvs();
         } else {
             return new HashMap<>();

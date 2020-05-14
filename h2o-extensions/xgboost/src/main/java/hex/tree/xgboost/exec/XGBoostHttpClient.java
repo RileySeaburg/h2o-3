@@ -69,7 +69,7 @@ public class XGBoostHttpClient {
     }
 
     private <T> T post(Key key, String method, XGBoostExecReq reqContent, ResponseTransformer<T> transformer) {
-        LOG.info("Request " + method + " " + reqContent);
+        LOG.info("Request " + method + " " + key + " " + reqContent);
         XGBoostExecReqV3 req = new XGBoostExecReqV3(key, reqContent);
         HttpPost httpReq = new HttpPost(baseUri + method);
         httpReq.setEntity(new StringEntity(req.toJsonString(), UTF_8));

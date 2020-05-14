@@ -5,7 +5,12 @@ import java.util.Arrays;
 import java.util.Map;
 
 public class XGBoostExecReq implements Serializable {
-    
+
+    @Override
+    public String toString() {
+        return "XGBoostExecReq{}";
+    }
+
     public static class Init extends XGBoostExecReq {
         public int num_nodes;
         public Map<String, Object> parms;
