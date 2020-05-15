@@ -5,7 +5,6 @@ import hex.genmodel.attributes.*;
 import hex.genmodel.attributes.metrics.*;
 import hex.genmodel.descriptor.ModelDescriptor;
 import hex.tree.isofor.ModelMetricsAnomaly;
-import water.util.IcedHashMap;
 import water.util.Log;
 import water.util.TwoDimTable;
 
@@ -22,7 +21,7 @@ public class GenericModelOutput extends Model.Output {
     TwoDimTable _variable_importances;
 
 
-    public GenericModelOutput(final ModelDescriptor modelDescriptor, final ModelAttributes modelAttributes, final HashMap<String, Object> reproducibilityInformation) {
+    public GenericModelOutput(final ModelDescriptor modelDescriptor, final ModelAttributes modelAttributes, final Table[] reproducibilityInformation) {
         _isSupervised = modelDescriptor.isSupervised();
         _domains = modelDescriptor.scoringDomains();
         _origDomains = modelDescriptor.scoringDomains();
@@ -37,7 +36,7 @@ public class GenericModelOutput extends Model.Output {
         _defaultThreshold = modelDescriptor.defaultThreshold();
         _original_model_identifier = modelDescriptor.algoName();
         _original_model_full_name = modelDescriptor.algoFullName();
-        _reproducibility_information_map = convertMap(reproducibilityInformation);
+        _reproducibility_information_table = convertTables(reproducibilityInformation);
 
         if (modelAttributes != null) {
             _model_summary = convertTable(modelAttributes.getModelSummary());
@@ -53,15 +52,6 @@ public class GenericModelOutput extends Model.Output {
             convertMetrics(modelAttributes, modelDescriptor);
             _scoring_history = convertTable(modelAttributes.getScoringHistory());
         }
-    }
-
-    private IcedHashMap<String, Object> convertMap(Map<String, Object> original) {
-        IcedHashMap<String, Object> result = new IcedHashMap<>();
-        for (Map.Entry<String, Object> entry : original.entrySet()) {
-            Object value = entry.getValue();
-            result.put(entry.getKey(), value instanceof Map ? convertMap((Map<String, Object>) value) : value);
-        }
-        return result;
     }
 
     private void convertMetrics(final ModelAttributes modelAttributes, final ModelDescriptor modelDescriptor) {
@@ -257,6 +247,14 @@ public class GenericModelOutput extends Model.Output {
 
         TwoDimTable varImps = ModelMetrics.calcVarImp(variableImportances._importances, variableImportances._variables);
         return varImps;
+    }
+    
+    private static TwoDimTable[] convertTables(final Table[] inputTables) {
+        TwoDimTable[] tables = new TwoDimTable[inputTables.length];
+        for (int i = 0; i < inputTables.length; i++) {
+            tables[i] = convertTable(inputTables[i]);
+        }
+        return tables;
     }
     
     private static TwoDimTable convertTable(final Table convertedTable){

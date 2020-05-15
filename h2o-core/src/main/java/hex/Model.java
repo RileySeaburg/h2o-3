@@ -507,53 +507,104 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
     Frame makeInteractions(Frame f);
   }
 
-  private static IcedHashMap<String, Object> createNodeInformationMap() {
-    IcedHashMap<String, Object> map = new IcedHashMap<>();
-    
-    for (int i = 0; i < H2O.CLOUD.members().length; i++) {
-      //create node info map for each node
-      map.put("Node " + i, createEachNodeInformationMap(i));
+  private static TwoDimTable createNodeInformationTable() {
+    List<String> colHeaders = new ArrayList<>();
+    List<String> colTypes = new ArrayList<>();
+    List<String> colFormat = new ArrayList<>();
+
+    colHeaders.add("node"); colTypes.add("int"); colFormat.add("%d");
+    colHeaders.add("h2o"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("healthy"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("last_ping"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("num_cpus"); colTypes.add("int"); colFormat.add("%d");
+    colHeaders.add("sys_load"); colTypes.add("double"); colFormat.add("%.5f");
+    colHeaders.add("mem_value_size"); colTypes.add("long"); colFormat.add("%d");
+    colHeaders.add("free_mem"); colTypes.add("long"); colFormat.add("%d");
+    colHeaders.add("pojo_mem"); colTypes.add("long"); colFormat.add("%d");
+    colHeaders.add("swap_mem"); colTypes.add("long"); colFormat.add("%d");
+    colHeaders.add("free_disc"); colTypes.add("long"); colFormat.add("%d");
+    colHeaders.add("max_disc"); colTypes.add("long"); colFormat.add("%d");
+    colHeaders.add("pid"); colTypes.add("int"); colFormat.add("%d");
+    colHeaders.add("num_keys"); colTypes.add("int"); colFormat.add("%d");
+    colHeaders.add("tcps_active"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("open_fds"); colTypes.add("int"); colFormat.add("%d");
+    colHeaders.add("rpcs_active"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("nthreads"); colTypes.add("int"); colFormat.add("%d");
+    colHeaders.add("is_leader"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("total_mem"); colTypes.add("long"); colFormat.add("%d");
+    colHeaders.add("max_mem"); colTypes.add("long"); colFormat.add("%d");
+    colHeaders.add("java_version"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("jvm_launch_parameters"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("jvm_pid"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("os_version"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("machine_physical_mem"); colTypes.add("long"); colFormat.add("%d");
+    colHeaders.add("machine_locale"); colTypes.add("string"); colFormat.add("%s");
+
+    H2ONode[] members = H2O.CLOUD.members();
+
+    final int rows = members.length;
+    TwoDimTable table = new TwoDimTable(
+            "Node Information", null,
+            new String[rows],
+            colHeaders.toArray(new String[0]),
+            colTypes.toArray(new String[0]),
+            colFormat.toArray(new String[0]),
+            "");
+
+
+    for (int row = 0; row < rows; row++) {
+      IcedHashMap<String, Object> nodeConfiguration = members[row].getConfiguration();
+      int col = 0;
+      table.set(row, col++, row + 1);
+      table.set(row, col++, members[row].getIpPortString());
+      table.set(row, col++, Boolean.toString(members[row].isHealthy()));
+      table.set(row, col++, members[row]._last_heard_from);
+      table.set(row, col++, (int) members[row]._heartbeat._num_cpus);
+      table.set(row, col++, members[row]._heartbeat._system_load_average);
+      table.set(row, col++, members[row]._heartbeat.get_kv_mem());
+      table.set(row, col++, members[row]._heartbeat.get_free_mem());
+      table.set(row, col++, members[row]._heartbeat.get_pojo_mem());
+      table.set(row, col++, members[row]._heartbeat.get_swap_mem());
+      table.set(row, col++, members[row]._heartbeat.get_free_disk());
+      table.set(row, col++, members[row]._heartbeat.get_max_disk());
+      table.set(row, col++, members[row]._heartbeat._pid);
+      table.set(row, col++, members[row]._heartbeat._keys);
+      table.set(row, col++, members[row]._heartbeat._tcps_active);
+      table.set(row, col++, members[row]._heartbeat._process_num_open_fds);
+      table.set(row, col++, members[row]._heartbeat._rpcs);
+      table.set(row, col++, (int) members[row]._heartbeat._nthreads);
+      table.set(row, col++, Boolean.toString(row == H2O.CLOUD.leader().index() ? true : false));
+      table.set(row, col++, nodeConfiguration.get("_total_mem"));
+      table.set(row, col++, nodeConfiguration.get("_max_mem"));
+      table.set(row, col++, nodeConfiguration.get("_java_version"));
+      table.set(row, col++, nodeConfiguration.get("_jvm_launch_parameters"));
+      table.set(row, col++, nodeConfiguration.get("_jvm_pid"));
+      table.set(row, col++, nodeConfiguration.get("_os_version"));
+      table.set(row, col++, nodeConfiguration.get("_machine_psysical_mem"));
+      table.set(row, col++, nodeConfiguration.get("_machine_locale"));
     }
-    return map;
-  }
-
-  private static IcedHashMap<String, Object> createEachNodeInformationMap(int memberIndex) {
-    IcedHashMap<String, Object> map = new IcedHashMap<>();
-    H2ONode currentMember = H2O.CLOUD.members()[memberIndex];
-    
-    map.put("node", memberIndex);
-    map.put("h2o", currentMember.getIpPortString());
-    map.put("healthy", Boolean.toString(currentMember.isHealthy()));
-    map.put("last_ping", currentMember._last_heard_from);
-    map.put("num_cpus", (int) currentMember._heartbeat._num_cpus);
-    map.put("sys_load", currentMember._heartbeat._system_load_average);
-    map.put("mem_value_size", currentMember._heartbeat.get_kv_mem());
-    map.put("free_mem", currentMember._heartbeat.get_free_mem());
-    map.put("pojo_mem", currentMember._heartbeat.get_pojo_mem());
-    map.put("swap_mem", currentMember._heartbeat.get_swap_mem());
-    map.put("free_disc", currentMember._heartbeat.get_free_disk());
-    map.put("max_disc", currentMember._heartbeat.get_max_disk());
-    map.put("pid", currentMember._heartbeat._pid);
-    map.put("num_keys", currentMember._heartbeat._keys);
-    map.put("tcps_active", Character.toString(currentMember._heartbeat._tcps_active));
-    map.put("open_fds", currentMember._heartbeat._process_num_open_fds);
-    map.put("rpcs_active", Character.toString(currentMember._heartbeat._rpcs));
-    map.put("nthreads", (int) currentMember._heartbeat._nthreads);
-    map.put("is_leader", memberIndex == H2O.CLOUD.leader().index() ? true : false);
-    map.put("total_mem", currentMember._heartbeat.get_total_mem());
-    map.put("max_mem", currentMember._heartbeat.get_max_mem());
-    map.put("java_version", currentMember._heartbeat.get_java_version());
-    map.put("jvm_launch_parameters", currentMember._heartbeat.get_jvm_launch_parameters());
-    map.put("jvm_pid", currentMember._heartbeat.get_jvm_pid());
-    map.put("os_version", currentMember._heartbeat.get_os_version());
-    map.put("machine_physical_mem", currentMember._heartbeat.get_machine_psysical_mem());
-    map.put("machine_locale", currentMember._heartbeat.get_machine_locale());
-
-    return map;
+    return table;
   }
   
-  private static IcedHashMap<String, Object> createClusterConfigurationMap() {
-    IcedHashMap<String, Object> map = new IcedHashMap<>();
+  private static TwoDimTable createClusterConfigurationTable() {
+    List<String> colHeaders = new ArrayList<>();
+    List<String> colTypes = new ArrayList<>();
+    List<String> colFormat = new ArrayList<>();
+
+    colHeaders.add("H2O cluster uptime"); colTypes.add("long"); colFormat.add("%d");
+    colHeaders.add("H2O cluster timezone"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("H2O data parsing timezone"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("H2O cluster version"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("H2O cluster version age"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("H2O cluster name"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("H2O cluster total nodes"); colTypes.add("int"); colFormat.add("%d");
+    colHeaders.add("H2O cluster free memory"); colTypes.add("long"); colFormat.add("%d");
+    colHeaders.add("H2O cluster total cores"); colTypes.add("int"); colFormat.add("%d");
+    colHeaders.add("H2O cluster allowed cores"); colTypes.add("int"); colFormat.add("%d");
+    colHeaders.add("H2O cluster status"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("H2O internal security"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("H2O API Extensions"); colTypes.add("string"); colFormat.add("%s");
+
     H2ONode[] members = H2O.CLOUD.members();
     long freeMem = 0;
     int totalCores = 0;
@@ -575,22 +626,32 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
       else
         apiExtensions += ", " + ext.getName();
     }
-    
-    map.put("H2O cluster uptime", System.currentTimeMillis() - H2O.START_TIME_MILLIS.get());
-    map.put("H2O cluster timezone", DateTimeZone.getDefault().toString());
-    map.put("H2O data parsing timezone", ParseTime.getTimezone().toString());
-    map.put("H2O cluster version", H2O.ABV.projectVersion());
-    map.put("H2O cluster version age", PrettyPrint.toAge(H2O.ABV.compiledOnDate(), new Date()));
-    map.put("H2O cluster name", H2O.ARGS.name);
-    map.put("H2O cluster total nodes", H2O.ARGS.name);
-    map.put("H2O cluster free memory", freeMem);
-    map.put("H2O cluster total cores", totalCores);
-    map.put("H2O cluster allowed cores", clusterAllowedCores);
-    map.put("H2O cluster status", status);
-    map.put("H2O internal security",  Boolean.toString(H2OSecurityManager.instance().securityEnabled));
-    map.put("H2O API Extensions",  apiExtensions);
 
-    return map;
+    final int rows = 1;
+    TwoDimTable table = new TwoDimTable(
+            "Cluster Configuration", null,
+            new String[rows],
+            colHeaders.toArray(new String[0]),
+            colTypes.toArray(new String[0]),
+            colFormat.toArray(new String[0]),
+            "");
+    int row = 0;
+    int col = 0;
+    table.set(row, col++, System.currentTimeMillis() - H2O.START_TIME_MILLIS.get());
+    table.set(row, col++, DateTimeZone.getDefault().toString());
+    table.set(row, col++, ParseTime.getTimezone().toString());
+    table.set(row, col++, H2O.ABV.projectVersion());
+    table.set(row, col++, PrettyPrint.toAge(H2O.ABV.compiledOnDate(), new Date()));
+    table.set(row, col++, H2O.ARGS.name);
+    table.set(row, col++, H2O.CLOUD.size());
+    table.set(row, col++, freeMem);
+    table.set(row, col++, totalCores);
+    table.set(row, col++, clusterAllowedCores);
+    table.set(row, col++, status);
+    table.set(row, col++, Boolean.toString(H2OSecurityManager.instance().securityEnabled));
+    table.set(row, col++, apiExtensions);
+
+    return table;
   }
   
   public static class InteractionSpec extends Iced {
@@ -830,7 +891,7 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
       _hasFold = b.hasFoldCol();
       _distribution = b._distribution;
       _priorClassDist = b._priorClassDist;
-      _reproducibility_information_map = createReproducibilityInformationMap(b);
+      _reproducibility_information_table = createReproducibilityInformationTable(b);
       assert(_job==null);  // only set after job completion
       _defaultThreshold = -1;
     }
@@ -880,7 +941,7 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
      * Reproducibility information describing the current cluster configuration, each node configuration
      * and checksums for each frame used on the input of the algorithm
      */
-    public IcedHashMap<String, Object> _reproducibility_information_map;
+    public TwoDimTable[] _reproducibility_information_table;
     
 
     /**
@@ -1035,23 +1096,37 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
       return sb.toString();
     }
 
-    public IcedHashMap<String, Object> createInputFramesInformationMap(ModelBuilder modelBuilder) {
-      IcedHashMap<String, Object> map = new IcedHashMap<>();
-      
-      map.put("training_frame_checksum", modelBuilder.train().checksum());
-      if (modelBuilder._parms._valid != null) {
-        map.put("validation_frame_checksum", modelBuilder.valid().checksum());
-      }
-      
-      return map;
+    private TwoDimTable[] createReproducibilityInformationTable(ModelBuilder modelBuilder) {
+      TwoDimTable nodeInformation = createNodeInformationTable();
+      TwoDimTable clusterConfiguration = createClusterConfigurationTable();
+      TwoDimTable inputFramesInformation = createInputFramesInformationTable(modelBuilder);
+      TwoDimTable[] tables = {nodeInformation, clusterConfiguration, inputFramesInformation};
+      return tables;
     }
 
-    private IcedHashMap<String, Object> createReproducibilityInformationMap(ModelBuilder modelBuilder) {
-      IcedHashMap<String, Object> map = new IcedHashMap<>();
-      map.put("cluster configuration", createClusterConfigurationMap());
-      map.put("node information", createNodeInformationMap());
-      map.put("input frames information", createInputFramesInformationMap(modelBuilder));
-      return map;
+    public TwoDimTable createInputFramesInformationTable(ModelBuilder modelBuilder) {
+      List<String> colHeaders = new ArrayList<>();
+      List<String> colTypes = new ArrayList<>();
+      List<String> colFormat = new ArrayList<>();
+
+      colHeaders.add("Input Frame"); colTypes.add("string"); colFormat.add("%s");
+      colHeaders.add("Checksum"); colTypes.add("long"); colFormat.add("%d");
+
+      final int rows = 2;
+      TwoDimTable table = new TwoDimTable(
+              "Input Frames Information", null,
+              new String[rows],
+              colHeaders.toArray(new String[0]),
+              colTypes.toArray(new String[0]),
+              colFormat.toArray(new String[0]),
+              "");
+
+      table.set(0, 0, "training_frame");
+      table.set(1, 0, "validation_frame");
+      table.set(0, 1, modelBuilder.train().checksum());
+      table.set(1, 1, modelBuilder._valid != null ? modelBuilder.valid().checksum() : -1);
+
+      return table;
     }
   } // Output
 

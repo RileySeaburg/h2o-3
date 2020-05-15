@@ -51,7 +51,7 @@ public class ModelOutputSchemaV3<O extends Model.Output, S extends ModelOutputSc
   public TwoDimTableV3 scoring_history;
 
   @API(help="Model reproducibility information", direction=API.Direction.OUTPUT, level=API.Level.secondary)
-  public IcedHashMap<String, Object> reproducibility_information_map;
+  public TwoDimTableV3[] reproducibility_information_table;
   
   @API(help="Training data model metrics", direction=API.Direction.OUTPUT, level=API.Level.critical)
   public ModelMetricsBaseV3 training_metrics;

@@ -17,10 +17,9 @@ def gbm_mojo_reproducibility_info():
     params = {'ntrees': 50, 'learn_rate': 0.1, 'max_depth': 4}
     gbmModel = pyunit_utils.build_save_model_GBM(params, x, train, "response")
 
-    isinstance(gbmModel._model_json['output']['reproducibility_information_map']['cluster configuration']['H2O cluster uptime'], int)
-    isinstance(gbmModel._model_json['output']['reproducibility_information_map']['node information']['Node 0']['java_version'], str)
-    isinstance(gbmModel._model_json['output']['reproducibility_information_map']['input frames information']['training_frame_checksum'], int)
-
+    isinstance(gbmModel._model_json['output']['reproducibility_information_table'][1]['h2o_cluster_uptime'][0], float)
+    isinstance(gbmModel._model_json['output']['reproducibility_information_table'][0]['java_version'][0], str)
+    assert(gbmModel._model_json['output']['reproducibility_information_table'][2]['input_frame'][0] == 'training_frame')
 
     ecology = h2o.import_file(path=pyunit_utils.locate("smalldata/gbm_test/ecology_model.csv"))
     ecology['Angaus'] = ecology['Angaus'].asfactor()
@@ -38,11 +37,11 @@ def gbm_mojo_reproducibility_info():
     os.makedirs(TMPDIR)
     mojo_path = model.download_mojo(path=TMPDIR)
     gbmModel = h2o.upload_mojo(mojo_path=mojo_path)
-    
-    isinstance(gbmModel._model_json['output']['reproducibility_information_map']['cluster configuration']['H2O cluster uptime'], int)
-    isinstance(gbmModel._model_json['output']['reproducibility_information_map']['node information']['Node 0']['java_version'], str)
-    isinstance(gbmModel._model_json['output']['reproducibility_information_map']['input frames information']['training_frame_checksum'], int)
-    isinstance(gbmModel._model_json['output']['reproducibility_information_map']['input frames information']['calibration_frame_checksum'], int)
+
+    isinstance(gbmModel._model_json['output']['reproducibility_information_table'][1]['h2o_cluster_uptime'][0], float)
+    isinstance(gbmModel._model_json['output']['reproducibility_information_table'][0]['java_version'][0], str)
+    assert(gbmModel._model_json['output']['reproducibility_information_table'][2]['input_frame'][0] == 'training_frame')
+    assert(gbmModel._model_json['output']['reproducibility_information_table'][2]['input_frame'][2] == 'calibration_frame')
 
 
 if __name__ == "__main__":

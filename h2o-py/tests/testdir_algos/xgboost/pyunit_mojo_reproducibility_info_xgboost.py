@@ -29,11 +29,10 @@ def xgb_mojo_reproducibility_info():
     mojo_path = model.download_mojo(path=TMPDIR)
     xgbModel = h2o.upload_mojo(mojo_path=mojo_path)
 
-    isinstance(xgbModel._model_json['output']['reproducibility_information_map']['cluster configuration']['H2O cluster uptime'], int)
-    isinstance(xgbModel._model_json['output']['reproducibility_information_map']['node information']['Node 0']['java_version'], str)
-    isinstance(xgbModel._model_json['output']['reproducibility_information_map']['input frames information']['training_frame_checksum'], int)
-    isinstance(xgbModel._model_json['output']['reproducibility_information_map']['input frames information']['calibration_frame_checksum'], int)
-
+    isinstance(xgbModel._model_json['output']['reproducibility_information_table'][1]['h2o_cluster_uptime'][0], float)
+    isinstance(xgbModel._model_json['output']['reproducibility_information_table'][0]['java_version'][0], str)
+    assert(xgbModel._model_json['output']['reproducibility_information_table'][2]['input_frame'][0] == 'training_frame')
+    assert(xgbModel._model_json['output']['reproducibility_information_table'][2]['input_frame'][2] == 'calibration_frame')
 
 if __name__ == "__main__":
     pyunit_utils.standalone_test(xgb_mojo_reproducibility_info)

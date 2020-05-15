@@ -132,15 +132,6 @@ public class HeartBeatThread extends Thread {
       }
       catch (Exception ignore) {}
       
-      hb.set_total_mem(runtime.totalMemory());
-      hb.set_max_mem(runtime.maxMemory());
-      hb.set_java_version("Java " + System.getProperty("java.version") + " (from " + System.getProperty("java.vendor") + ")");
-      hb.set_jvm_launch_parameters(ManagementFactory.getRuntimeMXBean().getInputArguments().toString());
-      hb.set_jvm_pid(ManagementFactory.getRuntimeMXBean().getName());
-      hb.set_os_version(System.getProperty("os.name")+" "+System.getProperty("os.version")+" ("+System.getProperty("os.arch")+")");
-      hb.set_machine_psysical_mem(OSUtils.getTotalPhysicalMemory());
-      hb.set_machine_locale(Locale.getDefault().toString());
-
       // Announce what Cloud we think we are in.
       // Publish our health as well.
       UDPHeartbeat.build_and_multicast(cloud, hb);

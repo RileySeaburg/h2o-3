@@ -45,18 +45,32 @@ public class XGBoostOutput extends Model.Output implements Model.GetNTrees, Plat
   public GLMModel _calib_model;
 
   @Override
-  public IcedHashMap<String, Object> createInputFramesInformationMap(ModelBuilder modelBuilder) {
-    IcedHashMap<String, Object> map = new IcedHashMap<>();
-
-    map.put("training_frame_checksum",modelBuilder.train().checksum());
+  public TwoDimTable createInputFramesInformationTable(ModelBuilder modelBuilder) {
+    List<String> colHeaders = new ArrayList<>();
+    List<String> colTypes = new ArrayList<>();
+    List<String> colFormat = new ArrayList<>();
     XGBoostModel.XGBoostParameters params = (XGBoostModel.XGBoostParameters) modelBuilder._parms;
-    if (params._valid != null) {
-      map.put("validation_frame_checksum", modelBuilder.valid().checksum());
-    }
-    if (params._calibration_frame != null) {
-      map.put("calibration_frame_checksum", params.getCalibrationFrame().checksum());
-    }
-    return map;
+
+    colHeaders.add("Input Frame"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("Checksum"); colTypes.add("long"); colFormat.add("%d");
+
+    final int rows = 3;
+    TwoDimTable table = new TwoDimTable(
+            "Input Frames Information", null,
+            new String[rows],
+            colHeaders.toArray(new String[0]),
+            colTypes.toArray(new String[0]),
+            colFormat.toArray(new String[0]),
+            "");
+
+    table.set(0, 0, "training_frame");
+    table.set(1, 0, "validation_frame");
+    table.set(2, 0, "calibration_frame");
+    table.set(0, 1, modelBuilder.train().checksum());
+    table.set(1, 1, params._valid != null ? modelBuilder.valid().checksum() : -1);
+    table.set(2, 1, params.getCalibrationFrame() != null ? params.getCalibrationFrame().checksum() : -1);
+
+    return table;
   }
   
   @Override

@@ -49,30 +49,6 @@ public class HeartBeat extends Iced<HeartBeat> {
   public long get_free_mem() { return _free_mem; }
   public long get_swap_mem() { return _swap_mem; }
   
-  private long _total_mem;
-  private long _max_mem;
-  private String _java_version;
-  private String _jvm_launch_parameters;
-  private String _jvm_pid;
-  private String _os_version;
-  private long _machine_psysical_mem;
-  private String _machine_locale;
-  public long get_total_mem() { return _total_mem; }
-  public void set_total_mem(long _total_mem) { this._total_mem = _total_mem; }
-  public long get_max_mem() { return _max_mem; }
-  public void set_max_mem(long _max_mem) { this._max_mem = _max_mem; }
-  public String get_java_version() { return _java_version; }
-  public void set_java_version(String _java_version) { this._java_version = _java_version; }
-  public String get_jvm_launch_parameters() { return _jvm_launch_parameters; }
-  public void set_jvm_launch_parameters(String _jvm_launch_parameters) { this._jvm_launch_parameters = _jvm_launch_parameters; }
-  public String get_jvm_pid() { return _jvm_pid; }
-  public void set_jvm_pid(String _jvm_pid) { this._jvm_pid = _jvm_pid; }
-  public String get_os_version() { return _os_version; }
-  public void set_os_version(String _os_version) { this._os_version = _os_version; }
-  public long get_machine_psysical_mem() { return _machine_psysical_mem; }
-  public void set_machine_psysical_mem(long _machine_psysical_mem) { this._machine_psysical_mem = _machine_psysical_mem; }
-  public String get_machine_locale() { return _machine_locale; }
-  public void set_machine_locale(String _machine_locale) { this._machine_locale = _machine_locale; }
 
   public int _keys;       // Number of LOCAL keys in this node, cached or homed
 

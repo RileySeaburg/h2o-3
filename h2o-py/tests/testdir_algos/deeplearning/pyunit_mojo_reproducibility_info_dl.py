@@ -35,10 +35,10 @@ def dl_mojo_reproducibility_info():
     mojo_path = model.download_mojo(path=TMPDIR)
     dlModel = h2o.upload_mojo(mojo_path=mojo_path)
     
-    isinstance(dlModel._model_json['output']['reproducibility_information_map']['cluster configuration']['H2O cluster uptime'], int)
-    isinstance(dlModel._model_json['output']['reproducibility_information_map']['node information']['Node 0']['java_version'], str)
-    isinstance(dlModel._model_json['output']['reproducibility_information_map']['input frames information']['training_frame_checksum'], int)
-    isinstance(dlModel._model_json['output']['reproducibility_information_map']['input frames information']['validation_frame_checksum'], int)
+    isinstance(dlModel._model_json['output']['reproducibility_information_table'][1]['h2o_cluster_uptime'][0], float)
+    isinstance(dlModel._model_json['output']['reproducibility_information_table'][0]['java_version'][0], str)
+    assert(dlModel._model_json['output']['reproducibility_information_table'][2]['input_frame'][0] == 'training_frame')
+    assert(dlModel._model_json['output']['reproducibility_information_table'][2]['input_frame'][1] == 'validation_frame')
 
 
 if __name__ == "__main__":

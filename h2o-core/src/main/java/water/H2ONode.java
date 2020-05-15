@@ -3,12 +3,10 @@ package water;
 import water.nbhm.NonBlockingHashMap;
 import water.nbhm.NonBlockingHashMapLong;
 import water.network.SocketChannelFactory;
-import water.util.ArrayUtils;
-import water.util.Log;
-import water.util.MathUtils;
-import water.util.UnsafeUtils;
+import water.util.*;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -41,7 +39,8 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
     
   transient private short _timestamp;
   transient private boolean _removed_from_cloud;
-  transient private volatile boolean _accessed_local_dkv; // Did this remote node ever accessed the local portion of DKV?   
+  transient private boolean _accessed_local_dkv; // Did this remote node ever accessed the local portion of DKV?
+  transient private IcedHashMap<String, Object> _configuration;
 
   public final boolean isClient() {
     return _heartbeat._client;
@@ -192,6 +191,25 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
     _socketFactory = SocketChannelFactory.instance(_security);
     _outgoingMsgQ = makeOutgoingMessageQueue();
     _sendThread = null; // initialized lazily
+    _configuration = setConfiguration();
+  }
+
+  public IcedHashMap<String, Object> getConfiguration() {
+    return _configuration;
+  }
+  
+  public IcedHashMap<String, Object> setConfiguration() {
+    IcedHashMap<String, Object> map = new IcedHashMap<>();
+    Runtime runtime = Runtime.getRuntime();
+    map.put("_total_mem", runtime.totalMemory());
+    map.put("_max_mem", runtime.maxMemory());
+    map.put("_java_version", "Java " + System.getProperty("java.version") + " (from " + System.getProperty("java.vendor") + ")");
+    map.put("_jvm_launch_parameters", ManagementFactory.getRuntimeMXBean().getInputArguments().toString());
+    map.put("_jvm_pid", ManagementFactory.getRuntimeMXBean().getName());
+    map.put("_os_version", System.getProperty("os.name") + " " + System.getProperty("os.version") + " (" + System.getProperty("os.arch") + ")");
+    map.put("_machine_psysical_mem", OSUtils.getTotalPhysicalMemory());
+    map.put("_machine_locale", Locale.getDefault().toString());
+    return map;
   }
 
   public boolean isHealthy() { return isHealthy(System.currentTimeMillis()); }

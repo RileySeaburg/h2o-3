@@ -15,10 +15,9 @@ def drf_mojo_reproducibility_info():
 
     drfModel = pyunit_utils.build_save_model_DRF(params, x, train, "response")
 
-    isinstance(drfModel._model_json['output']['reproducibility_information_map']['cluster configuration']['H2O cluster uptime'], int)
-    isinstance(drfModel._model_json['output']['reproducibility_information_map']['node information']['Node 0']['java_version'], str)
-    isinstance(drfModel._model_json['output']['reproducibility_information_map']['input frames information']['training_frame_checksum'], int)   
-
+    isinstance(drfModel._model_json['output']['reproducibility_information_table'][1]['h2o_cluster_uptime'][0], float)
+    isinstance(drfModel._model_json['output']['reproducibility_information_table'][0]['java_version'][0], str)
+    assert(drfModel._model_json['output']['reproducibility_information_table'][2]['input_frame'][0] == 'training_frame')
 
 if __name__ == "__main__":
     pyunit_utils.standalone_test(drf_mojo_reproducibility_info)

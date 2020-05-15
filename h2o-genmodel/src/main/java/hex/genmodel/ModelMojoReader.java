@@ -3,6 +3,7 @@ package hex.genmodel;
 import com.google.gson.*;
 import hex.genmodel.attributes.ModelAttributes;
 import hex.genmodel.attributes.ModelJsonReader;
+import hex.genmodel.attributes.Table;
 import hex.genmodel.descriptor.ModelDescriptorBuilder;
 import hex.genmodel.utils.ParseUtils;
 import hex.genmodel.utils.StringEscapeUtils;
@@ -200,40 +201,14 @@ public abstract class ModelMojoReader<M extends MojoModel> {
               .build();
       _model._modelAttributes = readModelSpecificAttributes();
     }
-    _model._reproducibilityInformation = readClusterConfiguration();
+    _model._reproducibilityInformation = readReproducibilityInformation() ;
   }
 
-  private HashMap<String, Object> jsonToMap(JsonObject jsonObject) {
-    HashMap<String, Object> map = new HashMap<>();
-    for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
-      JsonElement value = entry.getValue();
-      map.put(entry.getKey(), value.isJsonPrimitive() ? getValue(value) : jsonToMap(value.getAsJsonObject()));
-    }
-    return map;
-  }
-  
-  private Object getValue(JsonElement jsonElement) {
-    if (jsonElement.getAsJsonPrimitive().isNumber()) {
-      if (jsonElement.getAsDouble() - jsonElement.getAsLong() == 0) {
-        return jsonElement.getAsLong();
-      } else {
-        return jsonElement.getAsDouble();
-      }
-    } else if (jsonElement.getAsJsonPrimitive().isBoolean()) {
-      return jsonElement.getAsBoolean();
-    } else if (jsonElement.getAsJsonPrimitive().isString()) {
-      return jsonElement.getAsString();
-    } else {
-      return jsonElement.getAsString();
-    }
-  }
-
-  protected HashMap<String, Object> readClusterConfiguration() {
+  protected Table[] readReproducibilityInformation() {
     final JsonObject modelJson = ModelJsonReader.parseModelJson(_reader);
-    if (modelJson != null && modelJson.get("output") != null && ((JsonObject) modelJson.get("output")).get("reproducibility_information_map") != null) {
-      // parse configuration from model json
-      JsonObject reproducibilityInfoMapJsonObject = (JsonObject) ((JsonObject) modelJson.get("output")).get("reproducibility_information_map");
-      return jsonToMap(reproducibilityInfoMapJsonObject);
+    if (modelJson != null && modelJson.get("output") != null) {
+      Table[] tables = ModelJsonReader.readTableArray(modelJson, "output.reproducibility_information_table") ;
+      return tables;
     }
     return null;
   }
